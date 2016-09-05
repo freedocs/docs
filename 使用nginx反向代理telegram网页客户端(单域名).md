@@ -39,7 +39,7 @@ cat $1.crt ca-certs.crt > $1.chained.crt
 
 **配置 `web` 程序**
 
-1\. 下载 [webogram](https://github.com/zhukov/webogram/releases) 最新发行版，并解压到服务器 如 `/var/www/im`
+1\. 下载 [webogram](https://github.com/zhukov/webogram/releases) 最新发行版(第一个，不要下载Source code那个tarball)，并解压到服务器 如 `/var/www/im`
 
 2\. 修改 `/var/www/web/js/app.js`，将 `"https://"+l+".web.telegram.org/"` 中的域名修改为 `"https://im.example.com/"+l+"/"` 。这样在访问 `https://im.example.com` 时，调用的 `api` 会返回到 `im.example.com`。 
 
@@ -56,7 +56,7 @@ wget https://web.telegram.org/webogram.appcache
 
 在 `https://my.telegram.org` 注册新的应用并填写你的域名，提交后获得 `api_id` 及 `api_hash`
 
-修改 `/var/www/im/js/app.js` 文件，搜索 `Config.App={id:2496,hash:"8da85b0d5bfe62527e5b244c209159c3"`，将其中的 `id` 和 `hash` 修改为你的 `api_id` 和 `api_hash`
+修改 `/var/www/im/js/app.js` 文件，(这里虽然是一堆凌乱得不行的东西，但是可以在nano里使用Ctrl+W搜索)搜索 `Config.App={id:2496,hash:"8da85b0d5bfe62527e5b244c209159c3"`，将其中的 `id` 和 `hash` 修改为你的 `api_id` 和 `api_hash`
 
 5\. 修改文件拥有者为 `http` (archlinux) 或 `www-data` (ubuntu)
 
@@ -98,9 +98,6 @@ server {
         if ($scheme = http) {
             return 302 https://$http_host$request_uri;
         }
-        
-#        proxy_buffering off;
-#        proxy_pass https://web.telegram.org;
     }
 
     location ~* .(jpg|jpeg|png|gif|ico|css|js)$ {
