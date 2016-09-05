@@ -79,7 +79,11 @@ server {
 
     ssl_protocols       TLSv1 TLSv1.1 TLSv1.2;
     ssl_ciphers         HIGH:!aNULL:!MD5;
-
+    
+    ##DNS Resolver
+    resolver  8.8.8.8 valid=300s;
+    resolver_timeout  10s;
+    
     charset utf-8;
 
     access_log  /var/log/nginx/$host.access.log;
