@@ -10,19 +10,19 @@ ddwrt 固件版本: Netgear R6300V2 DD-WRT v3.0-r29875M kongac (06/11/16)
 
 将 ddwrt 固件中的 busybox 拷贝到本地， `file busybox` 可以看到 
 
-```
+```shell
 busybox: ELF 32-bit LSB  executable, ARM, EABI5 version 1 (SYSV), dynamically linked (uses shared libs), corrupted section header size
 ```
 
 再执行
 
-```
+```shell
 readelf -d busybox
 ```
 
 可以看到
 
-```
+```shell
   Tag        Type                         Name/Value
  0x00000001 (NEEDED)                     Shared library: [libgcc_s.so.1]
  0x00000001 (NEEDED)                     Shared library: [libc.so]
@@ -30,14 +30,14 @@ readelf -d busybox
 
 其调用了 `libc.so` ，在路由中检查 libc 版本
 
-```
+```shell
 cd /lib/
 ./libc.so
 ```
 
 可以看到 
 
-```
+```shell
 musl libc
 Version 1.1.11
 Dynamic Program Loader
@@ -52,7 +52,7 @@ Usage: ./libc.so [options] [--] pathname [args]
 
 将 `aria2c` 文件拷贝到 ddwrt `/jffs` 目录下，运行测试 `./aria2c --help` 查看结果
 
-```
+```shell
 ./aria2c --help
 Usage: aria2c [OPTIONS] [URI | MAGNET | TORRENT_FILE | METALINK_FILE]...
 Printing options tagged with '#basic'.
@@ -64,20 +64,20 @@ Printing options tagged with '#basic'.
 
 下载交叉编译环境并解压
 
-```
+```shell
 wget https://downloads.openwrt.org/snapshots/trunk/bcm53xx/generic/OpenWrt-SDK-bcm53xx_gcc-5.3.0_musl-1.1.14_eabi.Linux-x86_64.tar.bz2
 tar xf OpenWrt-SDK-bcm53xx_gcc-5.3.0_musl-1.1.14_eabi.Linux-x86_64.tar.bz2
 ```
 
 下载 n2n 源码
 
-```
+```shell
 svn checkout https://svn.ntop.org/svn/ntop/trunk/n2n/n2n_v2/
 ```
 
 配置环境变量
 
-```
+```shell
 PATH=$PATH:$HOME/OpenWrt-SDK-bcm53xx_gcc-5.3.0_musl-1.1.14_eabi.Linux-x86_64/staging_dir/toolchain-arm_cortex-a9_gcc-5.3.0_musl-1.1.14_eabi/bin
 export PATH
 STAGING_DIRPATH=$HOME/OpenWrt-SDK-bcm53xx_gcc-5.3.0_musl-1.1.14_eabi.Linux-x86_64/staging_dir/toolchain-arm_cortex-a9_gcc-5.3.0_musl-1.1.14_eabi
@@ -101,13 +101,13 @@ export LDFLAGS
 
 编译
 
-```
+```shell
 make CC=arm-openwrt-linux-muslgnueabi-gcc LD=arm-openwrt-linux-muslgnueabi-ld
 ```
 
 注意如果缺少 `openssl/aes.h` 等头文件，可以先在交叉环境中编译 nginx 来安装依赖。如果不怕麻烦要手动安装依赖，可以参考 [这里](https://forum.openwrt.org/viewtopic.php?id=57657)
 
-```
+```shell
 ./scripts/feeds update
 ./scripts/feeds install nginx
 make package/feeds/packages/nginx/compile V=s
@@ -121,7 +121,7 @@ make package/feeds/packages/nginx/compile V=s
 
 和 n2n 相同，下载源代码并解压后，在目录直接执行
 
-```
+```shell
 make CC=arm-openwrt-linux-muslgnueabi-gcc LD=arm-openwrt-linux-muslgnueabi-ld
 ```
 
@@ -132,7 +132,7 @@ make CC=arm-openwrt-linux-muslgnueabi-gcc LD=arm-openwrt-linux-muslgnueabi-ld
 
 安装依赖并下载源码 
 
-```
+```shell
 apt-get install git libssl-dev libpam0g-dev zlib1g-dev dh-autoreconf
 git clone https://github.com/shellinabox/shellinabox
 cd shellinabox
@@ -140,21 +140,21 @@ cd shellinabox
 
 通过编译 `openssh-server-pam` 为交叉编译环境安装 `libpam` 依赖
 
-```
+```shell
 ./scripts/feeds install openssh-server-pam
 make package/feeds/packages/openssh/compile V=s
 ```
 
 配置
 
-```
+```shell
 autoreconf -i
 ./configure
 ```
 
 修改 `shellinabox/launcher.c` 文件
 
-```
+```diff
 diff --git a/shellinabox/launcher.c b/shellinabox/launcher.c
 index 2bac171..2df1f3f 100644
 --- a/shellinabox/launcher.c
@@ -184,13 +184,13 @@ index 2bac171..2df1f3f 100644
 
 编译
 
-```
+```bash
 make CC=arm-openwrt-linux-muslgnueabi-gcc LD=arm-openwrt-linux-muslgnueabi-ld
 ```
 
 拷贝生成的 `shellinaboxd`，在路由上执行
 
-```
+```shell
 /usr/bin/shellinaboxd -t -s /:LOGIN --localhost-only --background=/var/run/shellinabox.pid
 ```
 
@@ -198,7 +198,7 @@ make CC=arm-openwrt-linux-muslgnueabi-gcc LD=arm-openwrt-linux-muslgnueabi-ld
 
 通过 nginx 做 https 的转发
 
-```
+```shell
     location /shellinabox {
         auth_basic "Authentication required";
         auth_basic_user_file /etc/nginx/.dlpasswd;
@@ -211,7 +211,7 @@ make CC=arm-openwrt-linux-muslgnueabi-gcc LD=arm-openwrt-linux-muslgnueabi-ld
 
 可以通过下边的 crontab 脚本管理服务
 
-```
+```shell
 #!/bin/bash
 
 # */1 * * * * /root/bin/shellinabox >> /var/log/shellinabox.log 2>&1
@@ -228,7 +228,7 @@ fi
 
 下载文件
 
-```
+```shell
 cd /jffs
 curl -k -s http://downloads.openwrt.org/snapshots/trunk/bcm53xx/generic/packages/packages/transmission-daemon-openssl_2.92-3_bcm53xx.ipk > t.tar.gz
 tar xzf t.tar.gz
@@ -250,7 +250,7 @@ rm control.tar.gz debian-binary t.tar.gz data.tar.gz
 
 运行
 
-```
+```shell
 mkdir /mnt/usb
 mount --bind /mnt/sdb1 /mnt/usb
 /jffs/usr/bin/transmission-daemon -g /mnt/usb/transmission --logfile /jffs/log/transmission-daemon.log --pid-file /jffs/run/transmission-daemon.pid
@@ -258,7 +258,7 @@ mount --bind /mnt/sdb1 /mnt/usb
 
 crontab 脚本
 
-```
+```shell
 #!/bin/sh
 
 # file locaton: /jffs/bin/transmission
