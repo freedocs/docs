@@ -1,5 +1,5 @@
 通过haproxy对流量类型判断，监听同一个端口(80)并根据流量类型选择不同的backend. 由于 `https` 是加密流量，且 `wss` 不能被很好的支持，所以不建议使用 443 端口配置多监听。
-
+当然您也可以使用诸如 sslh(https://github.com/yrutschle/sslh) 这种应用协议多路转换器进行端口复用。
 ## 1\. nginx http 监听到 127.0.0.1
 
 ```shell
