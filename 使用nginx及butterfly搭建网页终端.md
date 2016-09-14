@@ -1,4 +1,4 @@
-[butterfly](https://github.com/yohanakh/butterfly) 是一个优秀的 网页终端 (web terminal)，可以通过 nginx 构建一个网址为 `https://example.com/butterfly`的网页管理终端，同时使用 `http auth` 认证保证安全。
+[butterfly](https://github.com/paradoxxxzero/butterfly) 是一个优秀的 网页终端 (web terminal)，可以通过 nginx 构建一个网址为 `https://example.com/butterfly`的网页管理终端，同时使用 `http auth` 认证保证安全。
 
 `nginx` 需要 [ngx_http_substitutions_filter_module](https://github.com/yaoweibin/ngx_http_substitutions_filter_module) 模块的支持，
 	
