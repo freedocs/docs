@@ -1,12 +1,18 @@
-## 系统环境
+# 为 openwrt 和 ddwrt (r6300v2， ac68u) 编译可执行文件
 
-ddwrt 固件版本: Netgear R6300V2 DD-WRT v3.0-r29875M kongac (06/11/16)
+
+
+## 系统环境
 
 编译系统： ubuntu 16.04 64 bit
 
-安装二进制程序： n2n edge， kms server
+openwrt trunk, ddwrt 固件版本: Netgear R6300V2 DD-WRT v3.0-r29875M kongac (06/11/16)
 
-## 确认可执行文件格式
+安装二进制程序： n2n edge， shellinabox, kms server
+
+## 确认 ddwrt 可执行文件格式
+
+`openwrt` 的可执行未见可以直接通过 `SDK` 编译，`ddwrt` 则需要先确认可执行文件的格式。
 
 将 ddwrt 固件中的 busybox 拷贝到本地， `file busybox` 可以看到 
 
@@ -46,7 +52,7 @@ Usage: ./libc.so [options] [--] pathname [args]
 
 所以 ddwrt 使用的是 [musl libc](http://www.etalabs.net/compare_libcs.html)，再查看 openwrt 的 [编译发布](https://downloads.openwrt.org/snapshots/trunk/bcm53xx/generic/)
 
-从 `OpenWrt-SDK-bcm53xx_gcc-5.3.0_musl-1.1.14_eabi.Linux-x86_64.tar.bz2` 可以看到也是 `musl libc`，在 packages 目录下载 [aria2](https://downloads.openwrt.org/snapshots/trunk/bcm53xx/generic/packages/packages/aria2_1.24.0-1_bcm53xx.ipk)
+从 `OpenWrt-SDK-bcm53xx_gcc-5.3.0_musl-1.1.15_eabi.Linux-x86_64.tar.bz2` 可以看到也是 `musl libc`，在 packages 目录下载 [aria2](https://downloads.openwrt.org/snapshots/trunk/bcm53xx/generic/packages/packages/aria2_1.24.0-1_bcm53xx.ipk)
 
 改名为 `aria2_1.24.0-1_bcm53xx.tar.gz` ，解压缩，再解压缩包中的 `data.tar.gz` 得到 `data/usr/bin/aria2c` 文件。
 
@@ -60,36 +66,47 @@ Printing options tagged with '#basic'.
 
 可以看到可以正确的执行，说明 openwrt 编译的文件可以直接被用于 ddwrt。
 
-## 编译 n2n edge
+## 安装开发依赖
+
+```
+apt-get update
+apt-get install git-core build-essential libssl-dev libncurses5-dev unzip gawk
+apt-get install subversion mercurial
+```
 
 下载交叉编译环境并解压
 
 ```shell
-wget https://downloads.openwrt.org/snapshots/trunk/bcm53xx/generic/OpenWrt-SDK-bcm53xx_gcc-5.3.0_musl-1.1.14_eabi.Linux-x86_64.tar.bz2
-tar xf OpenWrt-SDK-bcm53xx_gcc-5.3.0_musl-1.1.14_eabi.Linux-x86_64.tar.bz2
-```
-
-下载 n2n 源码
-
-```shell
-svn checkout https://svn.ntop.org/svn/ntop/trunk/n2n/n2n_v2/
+wget https://downloads.openwrt.org/snapshots/trunk/bcm53xx/generic/OpenWrt-SDK-bcm53xx_gcc-5.3.0_musl-1.1.15_eabi.Linux-x86_64.tar.bz2
+tar xf OpenWrt-SDK-bcm53xx_gcc-5.3.0_musl-1.1.15_eabi.Linux-x86_64.tar.bz2 
+cd OpenWrt-SDK-bcm53xx_gcc-5.3.0_musl-1.1.15_eabi.Linux-x86_64
 ```
 
 配置环境变量
 
 ```shell
-PATH=$PATH:$HOME/OpenWrt-SDK-bcm53xx_gcc-5.3.0_musl-1.1.14_eabi.Linux-x86_64/staging_dir/toolchain-arm_cortex-a9_gcc-5.3.0_musl-1.1.14_eabi/bin
+PATH=$PATH:$HOME/OpenWrt-SDK-bcm53xx_gcc-5.3.0_musl-1.1.15_eabi.Linux-x86_64/staging_dir/toolchain-arm_cortex-a9_gcc-5.3.0_musl-1.1.15_eabi/bin
 export PATH
-STAGING_DIRPATH=$HOME/OpenWrt-SDK-bcm53xx_gcc-5.3.0_musl-1.1.14_eabi.Linux-x86_64/staging_dir/toolchain-arm_cortex-a9_gcc-5.3.0_musl-1.1.14_eabi
+
+STAGING_DIRPATH=$HOME/OpenWrt-SDK-bcm53xx_gcc-5.3.0_musl-1.1.15_eabi.Linux-x86_64/staging_dir/toolchain-arm_cortex-a9_gcc-5.3.0_musl-1.1.15_eabi
 export STAGING_DIRPATH
-STAGING_DIR=$HOME/OpenWrt-SDK-bcm53xx_gcc-5.3.0_musl-1.1.14_eabi.Linux-x86_64/staging_dir/toolchain-arm_cortex-a9_gcc-5.3.0_musl-1.1.14_eabi
+
+STAGING_DIR=$HOME/OpenWrt-SDK-bcm53xx_gcc-5.3.0_musl-1.1.15_eabi.Linux-x86_64/staging_dir/toolchain-arm_cortex-a9_gcc-5.3.0_musl-1.1.15_eabi
 export STAGING_DIR
 
-CFLAGS=-I$HOME/OpenWrt-SDK-bcm53xx_gcc-5.3.0_musl-1.1.14_eabi.Linux-x86_64/staging_dir/target-arm_cortex-a9_musl-1.1.14_eabi/usr/include
-LDFLAGS=-L$HOME/OpenWrt-SDK-bcm53xx_gcc-5.3.0_musl-1.1.14_eabi.Linux-x86_64/staging_dir/target-arm_cortex-a9_musl-1.1.14_eabi/usr/lib
+CFLAGS=-I$HOME/OpenWrt-SDK-bcm53xx_gcc-5.3.0_musl-1.1.15_eabi.Linux-x86_64/staging_dir/target-arm_cortex-a9_musl-1.1.15_eabi/usr/include
+LDFLAGS=-L$HOME/OpenWrt-SDK-bcm53xx_gcc-5.3.0_musl-1.1.15_eabi.Linux-x86_64/staging_dir/target-arm_cortex-a9_musl-1.1.15_eabi/usr/lib
 
 export CFLAGS
 export LDFLAGS
+```
+
+## 编译 n2n edge
+
+下载 n2n 源码
+
+```shell
+svn checkout https://svn.ntop.org/svn/ntop/trunk/n2n/n2n_v2/
 ```
 
 添加 `$(LDFLAGS)` 到每一个编译参数， 即修改 `Makefile`
@@ -130,6 +147,13 @@ make CC=arm-openwrt-linux-muslgnueabi-gcc LD=arm-openwrt-linux-muslgnueabi-ld
 
 ## 编译 shellinabox
 
+通过编译 `openssh-server-pam` 为交叉编译环境安装 `libpam` 依赖
+
+```shell
+./scripts/feeds install openssh-server-pam
+make package/feeds/packages/openssh/compile V=s
+```
+
 安装依赖并下载源码 
 
 ```shell
@@ -138,48 +162,11 @@ git clone https://github.com/shellinabox/shellinabox
 cd shellinabox
 ```
 
-通过编译 `openssh-server-pam` 为交叉编译环境安装 `libpam` 依赖
-
-```shell
-./scripts/feeds install openssh-server-pam
-make package/feeds/packages/openssh/compile V=s
-```
-
 配置
 
 ```shell
-autoreconf -i
-./configure
-```
-
-修改 `shellinabox/launcher.c` 文件
-
-```diff
-diff --git a/shellinabox/launcher.c b/shellinabox/launcher.c
-index 2bac171..2df1f3f 100644
---- a/shellinabox/launcher.c
-+++ b/shellinabox/launcher.c
-@@ -81,6 +81,10 @@
- #include <sys/uio.h>
- #endif
-
-+#ifndef TTYDEF_IFLAG
-+#include <sys/ttydefaults.h>
-+#endif
-+
- #ifdef HAVE_UTIL_H
- #include <util.h>
- #endif
-@@ -90,7 +94,8 @@
- #endif
-
- #ifdef HAVE_UTMPX_H
--#include <utmpx.h>
-+//#include <utmpx.h>
-+#undef HAVE_UTMPX_H
- #endif
-
- #if defined(HAVE_SECURITY_PAM_APPL_H)
+autoreconf -iv
+./configure --disable-utmp 
 ```
 
 编译
