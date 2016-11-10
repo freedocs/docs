@@ -13,7 +13,7 @@ archlinux, libvirt
 **安装 kpartx**
 
 ```
-su tianyu
+su user
 git clone https://aur.archlinux.org/multipath-tools.git
 cd multipath-tools
 
