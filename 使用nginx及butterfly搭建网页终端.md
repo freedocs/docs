@@ -179,7 +179,8 @@ service supervisor restart
 打开网页访问 `https://example.com/butterfly` 使用网页终端
 
 
-**Archlinux systemd 配置示例**
+##Archlinux systemd 配置示例
+
 
 可以使用 virtualenv 安装 butterfly，并添加 systemd 服务
 
