@@ -177,3 +177,47 @@ service supervisor restart
 **检查是否成功**
 
 打开网页访问 `https://example.com/butterfly` 使用网页终端
+
+
+**Archlinux systemd 配置示例**
+
+可以使用 virtualenv 安装 butterfly，并添加 systemd 服务
+
+```
+cd /var/www
+virtualenv -p python3 butterfly
+
+cd butterfly
+source bin/activate
+pip install butterfly
+```
+
+因为 `ArchLinux` 没有 `daemon` 用户，需要修改 `/var/www/butterfly/lib/python3.5/site-packages/butterfly/terminal.py` 文件中的 `daemon = utils.User(name='daemon')` 为 `daemon = utils.User(name='nobody')`
+
+执行测试，确保运行正常
+
+```
+butterfly.server.py --unsecure --login=true --host=127.0.0.1
+```
+
+添加 `systemd` 服务
+
+`vi /etc/systemd/system/butterfly.service`
+
+```
+[Unit]
+Description=Butterfly service 
+After=network.target
+
+[Service]
+ExecStart=/var/www/butterfly/bin/butterfly.server.py --unsecure --login=true --host=127.0.0.1
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```
+systemctl enable butterfly
+systemctl start butterfly
+```
